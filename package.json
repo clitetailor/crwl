@@ -1,0 +1,27 @@
+{
+  "name": "crwl",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "clitetailor",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "chalk": "^4.1.0",
+    "cheerio": "^1.0.0-rc.5",
+    "fs-extra": "^9.1.0",
+    "indent-string": "^4.0.0",
+    "js-yaml": "^4.0.0",
+    "meow": "^9.0.0",
+    "parse5": "^6.0.1",
+    "prettier": "^2.2.1",
+    "puppeteer": "^8.0.0",
+    "tesseract.js": "^2.1.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
+  }
+}
