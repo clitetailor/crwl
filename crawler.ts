@@ -11,6 +11,9 @@ import { createWorker, Worker } from 'tesseract.js'
 export interface CrawlerInput {
   start: number
   end: number
+  timeout: number
+  batchSize: number
+  batchTimeout: number
   baseUrl: string
 }
 
@@ -21,7 +24,14 @@ export function timeout(ms) {
 }
 
 export class Crawler {
-  static new({ start, end, baseUrl }: CrawlerInput) {
+  static new({
+    start,
+    end,
+    timeout,
+    batchSize,
+    batchTimeout,
+    baseUrl,
+  }: CrawlerInput) {
     const http = axios.create({
       baseURL: baseUrl,
     })
@@ -35,12 +45,23 @@ export class Crawler {
         ),
     })
 
-    return new Crawler(start, end, http, worker)
+    return new Crawler(
+      start,
+      end,
+      timeout,
+      batchSize,
+      batchTimeout,
+      http,
+      worker
+    )
   }
 
   constructor(
     private start: number,
     private end: number,
+    private timeout: number,
+    private batchSize: number,
+    private batchTimeout: number,
     private http: AxiosInstance,
     private worker: Worker
   ) {}
@@ -56,6 +77,8 @@ export class Crawler {
   }
 
   async crawlListOfCompanies() {
+    let batchOffset = 0
+
     for (const page of Array.from(
       { length: this.end - this.start },
       (_, k) => this.start + k
@@ -71,6 +94,8 @@ export class Crawler {
       const companies = []
 
       for (const link of links) {
+        batchOffset = (batchOffset + 1) % this.batchSize
+
         console.log(
           `${chalk.yellow(
             '[crawler]'
@@ -84,19 +109,23 @@ export class Crawler {
 
         companies.push(detail)
 
-        await timeout(100)
+        if (batchOffset === 0) {
+          console.log(
+            `${chalk.yellow(
+              '[crawler]'
+            )} batch timeout - duration=${this.batchTimeout}ms`
+          )
+
+          await timeout(this.batchTimeout)
+        } else {
+          await timeout(this.timeout)
+        }
       }
 
       await fs.outputFile(
         path.resolve('data', `page-${page}.yaml`),
         yaml.dump(companies)
       )
-
-      console.log(
-        `${chalk.yellow('[crawler]')} sleep - duration=20s`
-      )
-
-      await timeout(20_000)
     }
   }
 
